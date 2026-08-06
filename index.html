@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>होम लोन रिकव्हरी कॅल्क्युलेटर | ETHICA Finserv</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --navy:#0B1F3A;
+    --navy-2:#122a4d;
+    --paper:#FAF6EC;
+    --paper-2:#F1EAD9;
+    --gold:#C9A227;
+    --gold-2:#E4C24E;
+    --brick:#B23A2E;
+    --brick-2:#E9DAD6;
+    --green:#1F7A4D;
+    --green-2:#DCEEE2;
+    --ink:#1C2733;
+    --muted:#5B6675;
+    --line:#E2D9C2;
+    --radius:14px;
+    --shadow:0 10px 30px -12px rgba(11,31,58,0.25);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Noto Sans Devanagari','Poppins',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:60px;
+  }
+  .num{font-family:'Poppins','Noto Sans Devanagari',sans-serif;}
+
+  /* ===== Header ===== */
+  header{
+    background:linear-gradient(160deg,var(--navy) 0%, var(--navy-2) 100%);
+    color:var(--paper);
+    padding:26px 18px 60px;
+    position:relative;
+    overflow:hidden;
+  }
+  header::after{
+    content:"";
+    position:absolute; right:-60px; top:-60px;
+    width:220px;height:220px;border-radius:50%;
+    background:radial-gradient(circle, rgba(201,162,39,0.25), transparent 70%);
+  }
+  .brandrow{display:flex;align-items:center;justify-content:space-between;max-width:920px;margin:0 auto;position:relative;z-index:2;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-badge{
+    width:38px;height:38px;border-radius:10px;
+    background:var(--gold);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Poppins';font-weight:800;color:var(--navy);font-size:15px;
+  }
+  .brand-name{font-weight:700;font-size:15px;letter-spacing:.3px;}
+  .brand-sub{font-size:10.5px;color:#C9D4E4;letter-spacing:.5px;}
+  .headline{max-width:920px;margin:26px auto 0;position:relative;z-index:2;text-align:center;}
+  .eyebrow{
+    display:inline-block;background:rgba(228,194,78,0.15);color:var(--gold-2);
+    border:1px solid rgba(228,194,78,0.4);
+    padding:5px 14px;border-radius:99px;font-size:12px;font-weight:600;letter-spacing:.4px;
+    margin-bottom:14px;
+  }
+  h1{font-size:26px;margin:0 0 10px;font-weight:800;line-height:1.35;}
+  .headline p{color:#C9D4E4;font-size:14.5px;max-width:560px;margin:0 auto;line-height:1.6;}
+
+  /* ===== Shell / card ===== */
+  .shell{max-width:920px;margin:-36px auto 0;padding:0 16px;position:relative;z-index:3;}
+  .card{
+    background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);
+    border:1px solid var(--line);
+    padding:22px;margin-bottom:18px;
+  }
+  .card h2{
+    font-size:16px;margin:0 0 16px;color:var(--navy);font-weight:700;
+    display:flex;align-items:center;gap:8px;
+  }
+  .card h2 .tag{
+    background:var(--paper-2);color:var(--navy);font-size:11px;font-weight:700;
+    padding:3px 9px;border-radius:99px;
+  }
+
+  /* ===== Inputs ===== */
+  .field{margin-bottom:20px;}
+  .field-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+  .field-label{font-size:13.5px;font-weight:600;color:var(--ink);}
+  .field-value{font-size:17px;font-weight:800;color:var(--navy);font-family:'Poppins';}
+  input[type=range]{
+    -webkit-appearance:none;width:100%;height:6px;border-radius:99px;
+    background:var(--paper-2);outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:22px;height:22px;border-radius:50%;
+    background:var(--gold);border:3px solid var(--navy);cursor:pointer;
+    box-shadow:0 2px 6px rgba(0,0,0,0.25);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--gold);border:3px solid var(--navy);cursor:pointer;
+  }
+  .range-minmax{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px;}
+
+  .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px;}
+  .stat{
+    background:var(--paper);border:1px solid var(--line);border-radius:10px;
+    padding:12px 10px;text-align:center;
+  }
+  .stat .l{font-size:11px;color:var(--muted);margin-bottom:4px;}
+  .stat .v{font-size:15px;font-weight:800;color:var(--navy);font-family:'Poppins';}
+  @media(max-width:520px){
+    .stat-row{grid-template-columns:1fr 1fr;}
+    .stat:last-child{grid-column:span 2;}
+  }
+
+  /* ===== Toggles ===== */
+  .toggle-group{display:flex;gap:10px;flex-wrap:wrap;}
+  .toggle-btn{
+    flex:1;min-width:150px;text-align:center;
+    border:2px solid var(--line);border-radius:10px;padding:12px 10px;
+    cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);
+    transition:.15s;background:#fff;
+  }
+  .toggle-btn.active{
+    border-color:var(--gold);background:var(--paper-2);color:var(--navy);
+  }
+  .toggle-btn small{display:block;font-weight:400;font-size:11px;margin-top:3px;color:var(--muted);}
+
+  .switch-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .switch-label{font-size:13.5px;font-weight:600;}
+  .switch{position:relative;width:48px;height:26px;flex-shrink:0;}
+  .switch input{opacity:0;width:0;height:0;}
+  .slider-switch{
+    position:absolute;cursor:pointer;inset:0;background:#D8D2BF;border-radius:99px;transition:.2s;
+  }
+  .slider-switch::before{
+    content:"";position:absolute;height:20px;width:20px;left:3px;top:3px;
+    background:white;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3);
+  }
+  input:checked + .slider-switch{background:var(--green);}
+  input:checked + .slider-switch::before{transform:translateX(22px);}
+  .steppct{display:flex;gap:8px;}
+  .steppct button{
+    border:1.5px solid var(--line);background:#fff;padding:6px 14px;border-radius:99px;
+    font-size:12.5px;font-weight:700;cursor:pointer;color:var(--muted);
+  }
+  .steppct button.active{border-color:var(--green);background:var(--green-2);color:var(--green);}
+
+  /* ===== Result magic block ===== */
+  .magic{
+    background:linear-gradient(160deg,var(--navy),var(--navy-2));
+    border-radius:var(--radius);padding:24px 20px;color:#fff;position:relative;overflow:hidden;
+  }
+  .magic::after{
+    content:"";position:absolute;left:-40px;bottom:-40px;width:180px;height:180px;border-radius:50%;
+    background:radial-gradient(circle, rgba(31,122,77,0.35), transparent 70%);
+  }
+  .badge-row{display:flex;justify-content:center;margin-bottom:16px;position:relative;z-index:2;}
+  .badge{
+    padding:8px 20px;border-radius:99px;font-weight:800;font-size:14px;font-family:'Poppins';
+    display:inline-flex;align-items:center;gap:8px;
+  }
+  .badge.ok{background:var(--green-2);color:var(--green);}
+  .badge.warn{background:#F7E4D6;color:#9A4A1E;}
+
+  .magic-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;position:relative;z-index:2;}
+  .magic-item{
+    background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
+    border-radius:10px;padding:14px;text-align:center;
+  }
+  .magic-item .l{font-size:11.5px;color:#C9D4E4;margin-bottom:6px;}
+  .magic-item .v{font-size:19px;font-weight:800;font-family:'Poppins';}
+  .magic-item .v.gold{color:var(--gold-2);}
+  .magic-item .v.green{color:#7CD6A6;}
+  @media(max-width:520px){.magic-grid{grid-template-columns:1fr;}}
+
+  .sip-slider-wrap{margin-top:18px;position:relative;z-index:2;}
+  .sip-slider-wrap .field-top .field-label{color:#C9D4E4;}
+  .sip-slider-wrap .field-top .field-value{color:var(--gold-2);}
+  .sip-slider-wrap input[type=range]{background:rgba(255,255,255,0.15);}
+
+  /* ===== Chart ===== */
+  .chart-legend{display:flex;gap:18px;justify-content:center;margin-bottom:10px;flex-wrap:wrap;}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-weight:600;}
+  .dot{width:10px;height:10px;border-radius:3px;}
+  svg text{font-family:'Noto Sans Devanagari',sans-serif;}
+
+  /* ===== Table ===== */
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th,td{padding:9px 6px;text-align:center;border-bottom:1px solid var(--line);}
+  th{background:var(--paper-2);color:var(--navy);font-weight:700;font-size:11.5px;}
+  td.strategy{text-align:left;font-weight:700;color:var(--navy);}
+  tr.highlight td{background:var(--green-2);}
+  .scroll-x{overflow-x:auto;}
+
+  /* ===== CTA ===== */
+  .cta-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:520px){.cta-grid{grid-template-columns:1fr;}}
+  .btn{
+    border:none;border-radius:12px;padding:15px 16px;font-size:14.5px;font-weight:700;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+    font-family:'Noto Sans Devanagari',sans-serif;
+  }
+  .btn-whatsapp{background:#25D366;color:#fff;}
+  .btn-pdf{background:var(--navy);color:#fff;}
+  .btn:active{transform:scale(0.98);}
+
+  .note{
+    font-size:11.5px;color:var(--muted);line-height:1.6;background:var(--paper);
+    border:1px dashed var(--line);border-radius:10px;padding:12px 14px;margin-top:14px;
+  }
+
+  footer{max-width:920px;margin:20px auto 0;padding:16px;text-align:center;}
+  footer .disclaimer{font-size:10.5px;color:var(--muted);line-height:1.7;max-width:640px;margin:0 auto 10px;}
+  footer .credentials{font-size:12px;font-weight:700;color:var(--navy);}
+  footer .credentials span{color:var(--muted);font-weight:500;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brandrow">
+    <div class="brand">
+      <div class="brand-badge">EF</div>
+      <div>
+        <div class="brand-name">ETHICA Finserv</div>
+        <div class="brand-sub">वल्मिक उगले · AMFI/SIF DISTRIBUTOR</div>
+      </div>
+    </div>
+    <div class="brand-sub" style="text-align:right;">नाशिक<br>ARN-142382</div>
+  </div>
+  <div class="headline">
+    <span class="eyebrow">झिरो-कॉस्ट होम लोन इंजिन</span>
+    <h1>बँकेला दिलेलं व्याज,<br>SIP मधून परत मिळवा</h1>
+    <p>तुमचा होम लोन डेटा टाका आणि बघा — किती छोट्या SIP ने तुम्ही बँकेला दिलेलं संपूर्ण व्याज (किंवा संपूर्ण घराची किंमत) परत मिळवू शकता.</p>
+  </div>
+</header>
+
+<div class="shell">
+
+  <!-- INPUT CARD -->
+  <div class="card">
+    <h2>१. तुमचा होम लोन तपशील <span class="tag">Inputs</span></h2>
+
+    <div class="field">
+      <div class="field-top">
+        <span class="field-label">होम लोन रक्कम</span>
+        <span class="field-value">₹ <span id="loanAmountVal">50,00,000</span></span>
+      </div>
+      <input type="range" id="loanAmount" min="500000" max="20000000" step="50000" value="5000000">
+      <div class="range-minmax"><span>₹5 लाख</span><span>₹2 कोटी</span></div>
+    </div>
+
+    <div class="field">
+      <div class="field-top">
+        <span class="field-label">व्याजदर (वार्षिक)</span>
+        <span class="field-value"><span id="rateVal">8.5</span>%</span>
+      </div>
+      <input type="range" id="rate" min="6.5" max="12" step="0.05" value="8.5">
+      <div class="range-minmax"><span>6.5%</span><span>12%</span></div>
+    </div>
+
+    <div class="field" style="margin-bottom:6px;">
+      <div class="field-top">
+        <span class="field-label">कर्ज कालावधी</span>
+        <span class="field-value"><span id="tenureVal">20</span> वर्षे</span>
+      </div>
+      <input type="range" id="tenure" min="5" max="30" step="1" value="20">
+      <div class="range-minmax"><span>5 वर्षे</span><span>30 वर्षे</span></div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat"><div class="l">मासिक EMI</div><div class="v num" id="emiOut">—</div></div>
+      <div class="stat"><div class="l">एकूण व्याज</div><div class="v num" id="totalInterestOut">—</div></div>
+      <div class="stat"><div class="l">एकूण परतफेड</div><div class="v num" id="totalPaymentOut">—</div></div>
+    </div>
+  </div>
+
+  <!-- STRATEGY CARD -->
+  <div class="card">
+    <h2>२. रिकव्हरी स्ट्रॅटेजी निवडा <span class="tag">Toggles</span></h2>
+
+    <div class="field-label" style="margin-bottom:10px;">तुम्हाला काय वसूल करायचंय?</div>
+    <div class="toggle-group" style="margin-bottom:22px;">
+      <div class="toggle-btn active" id="modeInterest" onclick="setMode('interest')">
+        फक्त व्याज वसूल<small>Interest Recovery</small>
+      </div>
+      <div class="toggle-btn" id="modeFull" onclick="setMode('full')">
+        संपूर्ण घर मोफत<small>Principal + Interest</small>
+      </div>
+    </div>
+
+    <div class="switch-row" style="margin-bottom:14px;">
+      <div>
+        <div class="switch-label">वार्षिक स्टेप-अप SIP जोडा</div>
+        <div style="font-size:11.5px;color:var(--muted);">दरवर्षी SIP वाढवा — पगारवाढीप्रमाणे</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="stepupToggle" onchange="onStepupToggle()">
+        <span class="slider-switch"></span>
+      </label>
+    </div>
+
+    <div id="steppctRow" class="steppct" style="display:none;margin-bottom:6px;">
+      <button class="active" onclick="setStepPct(5,this)">५% वार्षिक</button>
+      <button onclick="setStepPct(10,this)">१०% वार्षिक</button>
+    </div>
+
+    <div class="field-label" style="margin-bottom:8px;">अपेक्षित SIP परतावा (वार्षिक)</div>
+    <div class="steppct">
+      <button class="active" onclick="setReturn(10,this)">10%</button>
+      <button onclick="setReturn(12,this)">12%</button>
+      <button onclick="setReturn(14,this)">14%</button>
+    </div>
+  </div>
+
+  <!-- MAGIC RESULT CARD -->
+  <div class="card" style="padding:0;border:none;background:transparent;box-shadow:none;">
+    <div class="magic">
+      <div class="badge-row"><span class="badge ok" id="recoveryBadge">✅ 100% रिकव्हर</span></div>
+      <div class="magic-grid">
+        <div class="magic-item"><div class="l">सुरुवात करा अवघ्या</div><div class="v gold num" id="requiredSipOut">—</div></div>
+        <div class="magic-item"><div class="l">व्याज रिकव्हरी वर्ष</div><div class="v green num" id="recoveryYearOut">—</div></div>
+        <div class="magic-item"><div class="l">🏆 Loan Freedom Year</div><div class="v gold num" id="freedomYearOut">—</div></div>
+        <div class="magic-item"><div class="l">कालावधी अखेर अतिरिक्त नफा</div><div class="v green num" id="surplusOut">—</div></div>
+      </div>
+
+      <div class="sip-slider-wrap">
+        <div class="field-top">
+          <span class="field-label">तुमची मासिक SIP (adjust करा)</span>
+          <span class="field-value num" id="sipSliderVal">₹ 2,250</span>
+        </div>
+        <input type="range" id="sipSlider" min="500" max="100000" step="50" value="2250" oninput="onSliderChange()">
+      </div>
+    </div>
+  </div>
+
+  <!-- CHART CARD -->
+  <div class="card">
+    <h2>३. व्याज vs SIP कॉर्पस — व्हिज्युअल <span class="tag">Chart</span></h2>
+    <div class="chart-legend">
+      <div class="legend-item"><span class="dot" style="background:var(--brick);"></span>बँकेला दिलेले संचित व्याज</div>
+      <div class="legend-item"><span class="dot" style="background:var(--green);"></span>तुमचा SIP कॉर्पस</div>
+    </div>
+    <div id="chartHolder" style="width:100%;overflow:hidden;"></div>
+  </div>
+
+  <!-- PITCH TABLE -->
+  <div class="card">
+    <h2>४. स्ट्रॅटेजी तुलना तक्ता <span class="tag">Client Pitch</span></h2>
+    <div class="scroll-x">
+      <table id="pitchTable">
+        <thead>
+          <tr><th style="text-align:left;">रणनीती</th><th>सुरुवातीची SIP</th><th>स्टेप-अप</th><th>एकूण गुंतवणूक</th><th>कालावधी अखेर मूल्य</th><th>रिकव्हरी वर्ष</th></tr>
+        </thead>
+        <tbody id="pitchTbody"></tbody>
+      </table>
+    </div>
+    <div class="note">टीप: SIP मधील परतावा दीर्घकालीन भांडवली नफा कर (LTCG) साठी पात्र आहे व गृहकर्ज व्याज सवलत (कलम 24-ब) आयकर प्रणालीनुसार बदलू शकते. वरील आकडे मार्केट-लिंक्ड अंदाज असून हमी परतावा दर्शवत नाहीत — योग्य कर सल्लागाराचा सल्ला घ्या.</div>
+  </div>
+
+  <!-- CTA -->
+  <div class="card">
+    <h2>५. तुमचा पर्सनलाइज्ड रिपोर्ट मिळवा</h2>
+    <div class="cta-grid">
+      <button class="btn btn-whatsapp" onclick="shareWhatsApp()">📲 WhatsApp वर पाठवा</button>
+      <button class="btn btn-pdf" onclick="downloadPDF()">⬇️ PDF रिपोर्ट डाउनलोड</button>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="disclaimer">
+    म्युच्युअल फंडातील गुंतवणूक ही बाजार जोखमीच्या अधीन आहे. योजनेसंबंधीत सर्व कागदपत्रे काळजीपूर्वक वाचावीत. वरील आकडेवारी केवळ शैक्षणिक/उदाहरणादाखल असून भविष्यातील परताव्याची हमी नाही. हा कॅल्क्युलेटर गुंतवणूक सल्ला नाही — वैयक्तिक आर्थिक नियोजनासाठी नोंदणीकृत सल्लागाराशी संपर्क साधा.
+  </div>
+  <div class="credentials">वल्मिक दगु उगले <span>| ARN-142382 | EUIN-E243525 | AMFI + SIF रजिस्टर्ड डिस्ट्रिब्युटर | ETHICA Finserv, नाशिक</span></div>
+</footer>
+
+<script>
+/* ============================= STATE ============================= */
+let state = {
+  loan: 5000000,
+  rate: 8.5,
+  tenure: 20,
+  mode: 'interest',       // 'interest' | 'full'
+  stepup: false,
+  stepPct: 5,
+  sipReturn: 12,
+  sipOverride: null       // if user drags slider manually
+};
+
+/* ============================= FORMATTERS ============================= */
+function fmtINR(n){
+  n = Math.round(n);
+  return '₹ ' + n.toLocaleString('en-IN');
+}
+function fmtLakhCr(n){
+  n = Math.round(n);
+  if(Math.abs(n) >= 10000000){
+    return '₹ ' + (n/10000000).toFixed(2) + ' कोटी';
+  } else if(Math.abs(n) >= 100000){
+    return '₹ ' + (n/100000).toFixed(2) + ' लाख';
+  }
+  return fmtINR(n);
+}
+
+/* ============================= CORE LOAN MATH ============================= */
+function simulateLoan(P, annualRatePct, years){
+  const r = annualRatePct/1200;
+  const n = years*12;
+  const emi = P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+  let balance = P;
+  let cumInterest = 0;
+  const cumInterestArr = [];
+  const balanceArr = [];
+  for(let m=1;m<=n;m++){
+    const interest = balance*r;
+    let principal = emi - interest;
+    balance -= principal;
+    if(balance < 0) balance = 0;
+    cumInterest += interest;
+    cumInterestArr.push(cumInterest);
+    balanceArr.push(balance);
+  }
+  return {emi, n, totalInterest: cumInterest, totalPayment: emi*n, cumInterestArr, balanceArr};
+}
+
+/* unit SIP corpus trajectory (base monthly = 1) with given annual step-up %, monthly return */
+function simulateUnitSIP(annualReturnPct, n, stepPct){
+  const i = annualReturnPct/1200;
+  let corpus = 0;
+  let currentSIP = 1;
+  const arr = [];
+  for(let m=1;m<=n;m++){
+    if(m>1 && (m-1)%12===0){ currentSIP = currentSIP*(1+stepPct/100); }
+    corpus = (corpus+currentSIP)*(1+i);
+    arr.push(corpus);
+  }
+  return arr; // linear in base SIP amount
+}
+
+function findCrossoverMonth(scaledArr, referenceArr){
+  for(let m=0;m<scaledArr.length;m++){
+    if(scaledArr[m] >= referenceArr[m]) return m+1; // month number
+  }
+  return null;
+}
+
+function monthsToYearsLabel(m){
+  if(m===null) return 'कालावधीत साध्य नाही';
+  const y = Math.ceil(m/12);
+  return y + (y===1?' वर्षे':' वर्षे') + ' मध्ये';
+}
+
+/* ============================= UI STATE FOR TOGGLES ============================= */
+function setMode(m){
+  state.mode = m;
+  document.getElementById('modeInterest').classList.toggle('active', m==='interest');
+  document.getElementById('modeFull').classList.toggle('active', m==='full');
+  state.sipOverride = null;
+  compute();
+}
+function onStepupToggle(){
+  state.stepup = document.getElementById('stepupToggle').checked;
+  document.getElementById('steppctRow').style.display = state.stepup ? 'flex' : 'none';
+  state.sipOverride = null;
+  compute();
+}
+function setStepPct(v, el){
+  state.stepPct = v;
+  document.querySelectorAll('#steppctRow button').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  state.sipOverride = null;
+  compute();
+}
+function setReturn(v, el){
+  state.sipReturn = v;
+  el.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  state.sipOverride = null;
+  compute();
+}
+function onSliderChange(){
+  const v = parseFloat(document.getElementById('sipSlider').value);
+  state.sipOverride = v;
+  document.getElementById('sipSliderVal').textContent = fmtINR(v);
+  renderResultsOnly();
+}
+
+/* ============================= MAIN COMPUTE ============================= */
+let LAST = null; // cache of last full computation for PDF/WhatsApp
+
+function compute(){
+  state.loan = parseFloat(document.getElementById('loanAmount').value);
+  state.rate = parseFloat(document.getElementById('rate').value);
+  state.tenure = parseFloat(document.getElementById('tenure').value);
+
+  document.getElementById('loanAmountVal').textContent = Math.round(state.loan).toLocaleString('en-IN');
+  document.getElementById('rateVal').textContent = state.rate.toFixed(2).replace(/\.00$/,'').replace(/0$/,'');
+  document.getElementById('tenureVal').textContent = state.tenure;
+
+  const loanSim = simulateLoan(state.loan, state.rate, state.tenure);
+  document.getElementById('emiOut').textContent = fmtLakhCr(loanSim.emi).replace('₹ ','₹');
+  document.getElementById('totalInterestOut').textContent = fmtLakhCr(loanSim.totalInterest);
+  document.getElementById('totalPaymentOut').textContent = fmtLakhCr(loanSim.totalPayment);
+
+  const target = state.mode==='interest' ? loanSim.totalInterest : loanSim.totalPayment;
+  const stepP = state.stepup ? state.stepPct : 0;
+  const unitArr = simulateUnitSIP(state.sipReturn, loanSim.n, stepP);
+  const k = unitArr[unitArr.length-1];
+  const requiredS1 = target / k;
+
+  // set slider bounds & default (only reset default if not manually overridden)
+  const slider = document.getElementById('sipSlider');
+  const sliderMax = Math.max(requiredS1*3, 5000);
+  slider.min = 200;
+  slider.max = Math.round(sliderMax);
+  if(state.sipOverride === null){
+    slider.value = Math.round(requiredS1);
+  } else {
+    slider.value = Math.round(state.sipOverride);
+  }
+
+  LAST = {loanSim, target, unitArr, requiredS1, stepP};
+  renderChartAndTable();
+  renderResultsOnly();
+}
+
+function renderResultsOnly(){
+  if(!LAST) return;
+  const {loanSim, target, unitArr, requiredS1} = LAST;
+  const activeS1 = state.sipOverride !== null ? state.sipOverride : requiredS1;
+  const scaledArr = unitArr.map(x=>x*activeS1);
+  const finalCorpus = scaledArr[scaledArr.length-1];
+  const recoveryPct = (finalCorpus/target)*100;
+
+  document.getElementById('requiredSipOut').textContent = fmtINR(requiredS1) + ' /महिना';
+  document.getElementById('sipSliderVal').textContent = fmtINR(activeS1);
+  document.getElementById('sipSlider').value = Math.round(activeS1);
+
+  const badge = document.getElementById('recoveryBadge');
+  if(recoveryPct >= 100){
+    badge.className = 'badge ok';
+    badge.textContent = '✅ ' + recoveryPct.toFixed(1) + '% व्याज रिकव्हर!';
+  } else {
+    badge.className = 'badge warn';
+    badge.textContent = '⚠️ ' + recoveryPct.toFixed(1) + '% रिकव्हर';
+  }
+
+  const recMonth = findCrossoverMonth(scaledArr, loanSim.cumInterestArr);
+  const freeMonth = findCrossoverMonth(scaledArr, loanSim.balanceArr);
+  document.getElementById('recoveryYearOut').textContent = recMonth ? Math.ceil(recMonth/12)+'व्या वर्षी' : 'साध्य नाही';
+  document.getElementById('freedomYearOut').textContent = freeMonth ? Math.ceil(freeMonth/12)+'व्या वर्षी' : 'साध्य नाही';
+
+  const surplus = finalCorpus - target;
+  document.getElementById('surplusOut').textContent = (surplus>=0?'+':'') + fmtLakhCr(surplus);
+
+  LAST.activeS1 = activeS1;
+  LAST.scaledArr = scaledArr;
+  LAST.recMonth = recMonth;
+  LAST.freeMonth = freeMonth;
+  LAST.recoveryPct = recoveryPct;
+}
+
+/* ============================= CHART (custom SVG) ============================= */
+function renderChartAndTable(){
+  const {loanSim, target, unitArr, requiredS1} = LAST;
+  const activeS1 = state.sipOverride !== null ? state.sipOverride : requiredS1;
+  const scaledArr = unitArr.map(x=>x*activeS1);
+  const n = loanSim.n;
+  const years = state.tenure;
+
+  // sample yearly points
+  const yearIdx = [];
+  for(let y=1;y<=years;y++){ yearIdx.push(Math.min(y*12,n)-1); }
+
+  const interestPts = yearIdx.map(idx=>loanSim.cumInterestArr[idx]);
+  const sipPts = yearIdx.map(idx=>scaledArr[idx]);
+  const maxVal = Math.max(...interestPts, ...sipPts) * 1.08;
+
+  const W = 640, H = 300, padL = 46, padR = 16, padT = 16, padB = 30;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+
+  function xOf(i){ return padL + (i/(years-1||1))*plotW; }
+  function yOf(v){ return padT + plotH - (v/maxVal)*plotH; }
+
+  function pathFor(pts){
+    return pts.map((v,i)=> (i===0?'M':'L') + xOf(i).toFixed(1) + ',' + yOf(v).toFixed(1)).join(' ');
+  }
+
+  // gridlines (4 horizontal)
+  let grid = '';
+  for(let g=0; g<=4; g++){
+    const val = maxVal*g/4;
+    const y = yOf(val);
+    grid += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#E7E0CC" stroke-width="1"/>`;
+    grid += `<text x="${padL-8}" y="${y+4}" font-size="9.5" fill="#8A94A3" text-anchor="end">${(val/100000).toFixed(0)}L</text>`;
+  }
+  // x labels (every ~ceil(years/6) years)
+  let xlabels = '';
+  const step = Math.max(1, Math.round(years/7));
+  for(let i=0;i<years;i+=step){
+    xlabels += `<text x="${xOf(i)}" y="${H-8}" font-size="9.5" fill="#8A94A3" text-anchor="middle">वर्ष ${i+1}</text>`;
+  }
+
+  let crossMark = '';
+  const recMonth = findCrossoverMonth(scaledArr, loanSim.cumInterestArr);
+  if(recMonth){
+    const recYearIdx = Math.min(Math.ceil(recMonth/12), years) - 1;
+    const cx = xOf(recYearIdx);
+    crossMark = `<line x1="${cx}" y1="${padT}" x2="${cx}" y2="${padT+plotH}" stroke="#C9A227" stroke-width="1.6" stroke-dasharray="4,4"/>
+      <text x="${cx}" y="${padT+12}" font-size="10" fill="#9A7A0E" text-anchor="middle" font-weight="700">रिकव्हरी</text>`;
+  }
+
+  const svg = `
+  <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;">
+    ${grid}
+    ${crossMark}
+    <path d="${pathFor(interestPts)}" fill="none" stroke="#B23A2E" stroke-width="2.6" stroke-linejoin="round"/>
+    <path d="${pathFor(sipPts)}" fill="none" stroke="#1F7A4D" stroke-width="2.6" stroke-linejoin="round"/>
+    ${xlabels}
+  </svg>`;
+  document.getElementById('chartHolder').innerHTML = svg;
+
+  renderPitchTable();
+}
+
+/* ============================= PITCH TABLE ============================= */
+function renderPitchTable(){
+  const {loanSim} = LAST;
+  const n = loanSim.n;
+  const unit0 = simulateUnitSIP(state.sipReturn, n, 0);
+  const unit10 = simulateUnitSIP(state.sipReturn, n, 10);
+  const k0 = unit0[unit0.length-1];
+  const k10 = unit10[unit10.length-1];
+
+  const rows = [];
+
+  // 1. Flat SIP - interest target
+  const s1Flat = loanSim.totalInterest/k0;
+  const arrFlat = unit0.map(x=>x*s1Flat);
+  rows.push(buildRow('फिक्स्ड SIP (स्पर्धकाची पद्धत)', s1Flat, 0, sumInvested(s1Flat,n,0), arrFlat[n-1], findCrossoverMonth(arrFlat, loanSim.cumInterestArr), false));
+
+  // 2. Step-up 10% - interest target (exact)
+  const s1Step = loanSim.totalInterest/k10;
+  const arrStep = unit10.map(x=>x*s1Step);
+  rows.push(buildRow('स्टेप-अप SIP (आपली पद्धत)', s1Step, 10, sumInvestedStep(s1Step,n,10), arrStep[n-1], findCrossoverMonth(arrStep, loanSim.cumInterestArr), true));
+
+  // 3. Fast recovery - same start as flat, but 10% stepup (overshoot)
+  const arrFast = unit10.map(x=>x*s1Flat);
+  rows.push(buildRow('जलद रिकव्हरी (Fast Recovery)', s1Flat, 10, sumInvestedStep(s1Flat,n,10), arrFast[n-1], findCrossoverMonth(arrFast, loanSim.cumInterestArr), false));
+
+  // 4. Zero cost house - full target, stepup 10%
+  const s1Full = loanSim.totalPayment/k10;
+  const arrFull = unit10.map(x=>x*s1Full);
+  rows.push(buildRow('संपूर्ण घर मोफत (Zero-Cost)', s1Full, 10, sumInvestedStep(s1Full,n,10), arrFull[n-1], findCrossoverMonth(arrFull, loanSim.balanceArr), false));
+
+  document.getElementById('pitchTbody').innerHTML = rows.join('');
+}
+function sumInvested(s1,n,stepPct){ return s1*n; }
+function sumInvestedStep(s1,n,stepPct){
+  let total=0, cur=s1;
+  for(let m=1;m<=n;m++){
+    if(m>1 && (m-1)%12===0){ cur = cur*(1+stepPct/100); }
+    total += cur;
+  }
+  return total;
+}
+function buildRow(name, s1, stepPct, invested, finalVal, crossMonth, hl){
+  const yr = crossMonth ? Math.ceil(crossMonth/12)+'व्या वर्षी' : 'साध्य नाही';
+  return `<tr${hl?' class="highlight"':''}>
+    <td class="strategy">${name}</td>
+    <td>${fmtINR(s1)}</td>
+    <td>${stepPct}%</td>
+    <td>${fmtLakhCr(invested)}</td>
+    <td>${fmtLakhCr(finalVal)}</td>
+    <td>${yr}</td>
+  </tr>`;
+}
+
+/* ============================= WHATSAPP CTA ============================= */
+function shareWhatsApp(){
+  if(!LAST) return;
+  const {loanSim, activeS1, recMonth, freeMonth, recoveryPct} = LAST;
+  const recYr = recMonth ? Math.ceil(recMonth/12)+' व्या वर्षी' : 'साध्य नाही';
+  const freeYr = freeMonth ? Math.ceil(freeMonth/12)+' व्या वर्षी' : 'साध्य नाही';
+  const msg =
+`*होम लोन रिकव्हरी रिपोर्ट - ETHICA Finserv*
+
+होम लोन: ${fmtLakhCr(state.loan)}
+व्याजदर: ${state.rate}% | कालावधी: ${state.tenure} वर्षे
+एकूण व्याज: ${fmtLakhCr(loanSim.totalInterest)}
+
+मासिक SIP: ${fmtINR(activeS1)}${state.stepup?(' (वार्षिक '+state.stepPct+'% स्टेप-अप)'):''}
+व्याज रिकव्हरी: ${recYr}
+Loan Freedom Year: ${freeYr}
+रिकव्हरी: ${recoveryPct.toFixed(1)}%
+
+सविस्तर पर्सनलाइज्ड प्लॅनसाठी संपर्क करा:
+वल्मिक उगले | ARN-142382 | ETHICA Finserv, नाशिक`;
+  const url = 'https://wa.me/?text=' + encodeURIComponent(msg);
+  window.open(url, '_blank');
+}
+
+/* ============================= PDF (Devanagari via canvas) ============================= */
+async function downloadPDF(){
+  if(!LAST) return;
+  try{
+    await document.fonts.load("800 34px 'Noto Sans Devanagari'");
+    await document.fonts.load("700 24px 'Noto Sans Devanagari'");
+    await document.fonts.load("600 20px 'Noto Sans Devanagari'");
+    await document.fonts.load("500 17px 'Noto Sans Devanagari'");
+    await document.fonts.ready;
+  }catch(e){}
+
+  const {loanSim, activeS1, recMonth, freeMonth, recoveryPct} = LAST;
+  const scale = 2;
+  const W = 900, H = 1273; // A4-ish ratio
+  const canvas = document.createElement('canvas');
+  canvas.width = W*scale; canvas.height = H*scale;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(scale,scale);
+
+  // background
+  ctx.fillStyle = '#FAF6EC'; ctx.fillRect(0,0,W,H);
+
+  // header band
+  ctx.fillStyle = '#0B1F3A'; ctx.fillRect(0,0,W,150);
+  ctx.fillStyle = '#C9A227';
+  ctx.font = "800 30px 'Noto Sans Devanagari'";
+  ctx.fillText('ETHICA Finserv', 40, 60);
+  ctx.fillStyle = '#FAF6EC';
+  ctx.font = "600 20px 'Noto Sans Devanagari'";
+  ctx.fillText('होम लोन रिकव्हरी रिपोर्ट', 40, 95);
+  ctx.font = "500 15px 'Noto Sans Devanagari'";
+  ctx.fillStyle = '#C9D4E4';
+  ctx.fillText('वल्मिक उगले  |  ARN-142382  |  EUIN-E243525  |  नाशिक', 40, 122);
+
+  let y = 200;
+  ctx.fillStyle = '#1C2733';
+  ctx.font = "700 22px 'Noto Sans Devanagari'";
+  ctx.fillText('कर्ज तपशील', 40, y); y+=36;
+  ctx.font = "500 18px 'Noto Sans Devanagari'";
+  const lines1 = [
+    'होम लोन रक्कम: ' + fmtLakhCr(state.loan),
+    'व्याजदर: ' + state.rate + '% | कालावधी: ' + state.tenure + ' वर्षे',
+    'मासिक EMI: ' + fmtINR(loanSim.emi),
+    'एकूण व्याज: ' + fmtLakhCr(loanSim.totalInterest),
+    'एकूण परतफेड: ' + fmtLakhCr(loanSim.totalPayment)
+  ];
+  lines1.forEach(l=>{ ctx.fillText(l, 40, y); y+=32; });
+
+  y += 20;
+  ctx.fillStyle = '#0B1F3A';
+  ctx.fillRect(30, y-28, W-60, 195);
+  ctx.fillStyle = '#C9A227';
+  ctx.font = "700 22px 'Noto Sans Devanagari'";
+  ctx.fillText('SIP रिकव्हरी प्लॅन', 50, y); y+=38;
+  ctx.fillStyle = '#FAF6EC';
+  ctx.font = "500 18px 'Noto Sans Devanagari'";
+  const recYr = recMonth ? Math.ceil(recMonth/12)+' व्या वर्षी' : 'कालावधीत साध्य नाही';
+  const freeYr = freeMonth ? Math.ceil(freeMonth/12)+' व्या वर्षी' : 'कालावधीत साध्य नाही';
+  const lines2 = [
+    'मासिक SIP: ' + fmtINR(activeS1) + (state.stepup ? ('  (वार्षिक '+state.stepPct+'% स्टेप-अप सह)') : '  (फिक्स्ड)'),
+    'व्याज रिकव्हरी वर्ष: ' + recYr,
+    '🏆 Loan Freedom Year: ' + freeYr,
+    'रिकव्हरी टक्केवारी: ' + recoveryPct.toFixed(1) + '%'
+  ];
+  lines2.forEach(l=>{ ctx.fillText(l, 50, y); y+=32; });
+
+  y += 60;
+  ctx.fillStyle = '#1C2733';
+  ctx.font = "700 20px 'Noto Sans Devanagari'";
+  ctx.fillText('पुढील पाऊल', 40, y); y+=30;
+  ctx.font = "500 16px 'Noto Sans Devanagari'";
+  ctx.fillText('सविस्तर वैयक्तिक नियोजनासाठी वल्मिक उगले यांच्याशी थेट संपर्क साधा.', 40, y); y+=26;
+  ctx.fillText('डोअरस्टेप सेवा | शून्य सेवा शुल्क | नाशिक व परिसर', 40, y);
+
+  // disclaimer footer
+  y = H - 110;
+  ctx.fillStyle = '#5B6675';
+  ctx.font = "400 12px 'Noto Sans Devanagari'";
+  const disc = [
+    'म्युच्युअल फंडातील गुंतवणूक ही बाजार जोखमीच्या अधीन आहे. योजनेसंबंधीत सर्व कागदपत्रे',
+    'काळजीपूर्वक वाचावीत. वरील आकडेवारी शैक्षणिक अंदाज असून भविष्यातील परताव्याची हमी नाही.',
+    'हा रिपोर्ट गुंतवणूक सल्ला नाही.'
+  ];
+  disc.forEach(l=>{ ctx.fillText(l, 40, y); y+=18; });
+  ctx.font = "700 13px 'Noto Sans Devanagari'";
+  ctx.fillStyle = '#0B1F3A';
+  ctx.fillText('वल्मिक दगु उगले | ARN-142382 | EUIN-E243525 | AMFI + SIF रजिस्टर्ड डिस्ट्रिब्युटर', 40, y+16);
+
+  const imgData = canvas.toDataURL('image/png');
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({unit:'pt', format:'a4'});
+  const pageW = pdf.internal.pageSize.getWidth();
+  const pageH = pdf.internal.pageSize.getHeight();
+  pdf.addImage(imgData, 'PNG', 0, 0, pageW, pageH);
+  pdf.save('Home-Loan-Recovery-Report-ETHICA-Finserv.pdf');
+}
+
+/* ============================= INIT ============================= */
+['loanAmount','rate','tenure'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', ()=>{ state.sipOverride=null; compute(); });
+});
+compute();
+</script>
+</body>
+</html>
