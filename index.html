@@ -482,6 +482,9 @@
       <div class="magic-info-toggle" onclick="toggleFreedomInfo()" id="freedomInfoToggle">❓ Freedom, व्याज-रिकव्हरीच्या आधी/नंतर का येतं?</div>
       <div class="magic-info-text" id="freedomInfoText"></div>
 
+      <div class="magic-info-toggle" onclick="toggleRedeemInfo()" id="redeemInfoToggle" style="margin-top:8px;">💡 हे पैसे काढून कर्ज फेडलं तर काय होईल?</div>
+      <div class="magic-info-text" id="redeemInfoText"></div>
+
       <div class="sip-slider-wrap">
         <div class="field-top">
           <span class="field-label">तुमची मासिक SIP (सुरुवातीची रक्कम — manual टाका किंवा slide करा)</span>
@@ -511,7 +514,7 @@
     <div class="scroll-x">
       <table id="pitchTable">
         <thead>
-          <tr><th style="text-align:left;">रणनीती</th><th>सुरुवातीची SIP</th><th>वाढीचा प्रकार</th><th>एकूण गुंतवणूक</th><th>कालावधी अखेर मूल्य</th><th>रिकव्हरी वर्ष</th></tr>
+          <tr><th style="text-align:left;">रणनीती</th><th>सुरुवातीची SIP</th><th>वाढीचा प्रकार</th><th>एकूण गुंतवणूक</th><th>कालावधी अखेर मूल्य</th><th>व्याज रिकव्हरी</th><th>Loan Freedom</th></tr>
         </thead>
         <tbody id="pitchTbody"></tbody>
       </table>
@@ -979,6 +982,37 @@ function renderFreedomInfo(){
   box.innerHTML = msg;
 }
 
+let redeemInfoOpen = false;
+function toggleRedeemInfo(){
+  redeemInfoOpen = !redeemInfoOpen;
+  document.getElementById('redeemInfoText').style.display = redeemInfoOpen ? 'block' : 'none';
+  document.getElementById('redeemInfoToggle').textContent = redeemInfoOpen
+    ? '❌ माहिती लपवा'
+    : '💡 हे पैसे काढून कर्ज फेडलं तर काय होईल?';
+  if(redeemInfoOpen) renderRedeemInfo();
+}
+function renderRedeemInfo(){
+  const box = document.getElementById('redeemInfoText');
+  const rateVsReturn = state.sipReturn > state.rate
+    ? ('सध्या तुमचा SIP परतावा (' + state.sipReturn + '%) हा कर्जाच्या व्याजदरापेक्षा (' + state.rate + '%) <b>जास्त</b> आहे — म्हणजे या आकड्यांनुसार SIP चालू ठेवणं, पैसे काढून कर्ज फेडण्यापेक्षा जास्त फायद्याचं ठरू शकतं.')
+    : ('सध्या कर्जाचा व्याजदर (' + state.rate + '%) हा तुमच्या अपेक्षित SIP परताव्यापेक्षा (' + state.sipReturn + '%) <b>जास्त किंवा बरोबरीचा</b> आहे — म्हणजे या आकड्यांनुसार कर्ज लवकर फेडणं अधिक सुरक्षित/फायद्याचं ठरू शकतं.');
+
+  box.innerHTML =
+    '<b>✅ हो, तांत्रिकदृष्ट्या शक्य आहे —</b> Mutual fund रिडीम केल्यास पैसे साधारण 2-3 दिवसांत खात्यात येतात. Floating-rate home loan वर foreclosure charges नाहीत (RBI नियमानुसार). Fixed-rate असल्यास मात्र 2-4% penalty असू शकते — बँकेकडे नक्की खात्री करा.<br><br>' +
+
+    '<b>⚠️ पण हे लक्षात घ्या —</b><br>' +
+    '• Redeem करताना <b>LTCG/STCG टॅक्स</b> कापला जातो (LTCG: 12.5%, ₹1.25 लाखावरील नफ्यावर) — calculator मधला आकडा आणि हातात प्रत्यक्ष येणारी रक्कम यात फरक पडेल.<br>' +
+    '• कर्ज लवकर बंद केल्यास <b>कलम 24-ब (₹2 लाख/वर्ष व्याजावर) आणि 80C (₹1.5 लाख/वर्ष मुद्दलावर)</b> ची टॅक्स सवलत पुढे मिळणार नाही.<br>' +
+    '• सर्वात महत्त्वाचा मुद्दा — <b>Compounding मध्येच तोडू नका.</b> SIP कॉर्पस शेवटच्या वर्षांतच सर्वात वेगाने वाढतो; जर SIP परतावा कर्जाच्या व्याजदरापेक्षा जास्त असेल, तर पैसे काढण्यापेक्षा गुंतवणूक चालू ठेवणं गणिती दृष्ट्या जास्त फायद्याचं असू शकतं.<br>' +
+    '• एकदा पैसे कर्जात गेले की <b>परत काढता येत नाहीत</b> — आणीबाणीसाठी लागणारी liquidity संपते.<br><br>' +
+
+    '<b>👉 कधी योग्य ठरतं —</b> मानसिक शांतता (कर्जमुक्तीची भावना) महत्त्वाची वाटत असेल, कर्जाचा व्याजदर SIP परताव्यापेक्षा जास्त असेल किंवा वाढण्याची शक्यता असेल, निवृत्तीच्या जवळ असाल, किंवा 80C ची मर्यादा आधीच इतरत्र भरलेली असेल.<br><br>' +
+
+    rateVsReturn + ' अचूक आकड्यांसाठी खालचं "५. Loan Prepayment vs SIP" कार्ड बघा.<br><br>' +
+
+    '<b>निष्कर्ष:</b> Loan Freedom Year म्हणजे "तुम्हाला पाहिजेच असेल तर करू शकता" हा पर्याय दाखवणारा टप्पा आहे — "करावंच" असा सल्ला नाही. योग्य निर्णय क्लायंटची risk appetite, टॅक्स स्लॅब आणि मानसिकता यावर अवलंबून आहे.';
+}
+
 /* ============================= DELAY-COST BOX ============================= */
 function renderDelayBox(){
   if(!LAST || !LAST.scaledArr) return;
@@ -1066,47 +1100,67 @@ function renderChartOnly(){
 }
 
 /* ============================= PITCH TABLE ============================= */
+/* Pure helper: compute one strategy's numbers for a given target-mode + step-method + param */
+function computeStrategy(loanSim, targetMode, method, param){
+  const n = loanSim.n;
+  const target = targetMode === 'interest' ? loanSim.totalInterest : loanSim.totalPayment;
+  let S1, buildArr, invested;
+
+  if(method === 'flat'){
+    const unit = simulateUnitPct(state.sipReturn, n, 0);
+    const k = unit[n-1];
+    S1 = target / k;
+    buildArr = unit.map(x=>x*S1);
+    invested = S1*n;
+  } else if(method === 'pct'){
+    const unit = simulateUnitPct(state.sipReturn, n, param);
+    const k = unit[n-1];
+    S1 = target / k;
+    buildArr = unit.map(x=>x*S1);
+    invested = sumStepPct(S1, n, param);
+  } else { // fixed
+    const unit0 = simulateUnitPct(state.sipReturn, n, 0);
+    const unitAddon = simulateUnitAddon(state.sipReturn, n);
+    const k0 = unit0[n-1], kAdd = unitAddon[n-1];
+    S1 = (target - param*kAdd) / k0;
+    if(S1 < 0) S1 = 0;
+    buildArr = new Array(n);
+    for(let m=0;m<n;m++){ buildArr[m] = unit0[m]*S1 + unitAddon[m]*param; }
+    invested = sumFixedAddon(S1, param, n);
+  }
+
+  const finalVal = buildArr[n-1];
+  const recMonth = findCrossoverMonth(buildArr, loanSim.cumInterestArr);
+  const freeMonth = findCrossoverMonth(buildArr, loanSim.balanceArr);
+  return {S1, invested, finalVal, recMonth, freeMonth};
+}
+
 function renderPitchTable(){
   const {loanSim} = LAST;
-  const n = loanSim.n;
-  const unit0 = simulateUnitPct(state.sipReturn, n, 0);
-  const unit10 = simulateUnitPct(state.sipReturn, n, 10);
-  const unitAddon = simulateUnitAddon(state.sipReturn, n);
-  const k0 = unit0[unit0.length-1];
-  const k10 = unit10[unit10.length-1];
+  const otherMode = state.mode === 'interest' ? 'full' : 'interest';
+  const modeLabel = m => m === 'interest' ? 'व्याज वसूल' : 'संपूर्ण घर मोफत';
+  const methodLabel = (method, param) => method === 'flat' ? 'No Step-up'
+    : method === 'pct' ? (param + '% वार्षिक')
+    : ('+₹' + Math.round(param).toLocaleString('en-IN') + '/वर्ष');
 
-  const rows = [];
+  // rows use the LIVE toggle values from card २ — nothing hardcoded
+  const rowDefs = [
+    {label:'फ्लॅट SIP', targetMode: state.mode, method:'flat', param:0},
+    {label:'% स्टेप-अप SIP', targetMode: state.mode, method:'pct', param: state.stepPctVal},
+    {label:'फिक्स्ड ₹ स्टेप-अप', targetMode: state.mode, method:'fixed', param: state.stepFixedVal},
+    {label:'फ्लॅट SIP', targetMode: otherMode, method:'flat', param:0},
+    {label:'% स्टेप-अप SIP', targetMode: otherMode, method:'pct', param: state.stepPctVal},
+  ];
 
-  // 1. Flat SIP - interest target
-  const s1Flat = loanSim.totalInterest/k0;
-  const arrFlat = unit0.map(x=>x*s1Flat);
-  rows.push(buildRow('फ्लॅट SIP', s1Flat, 'No Step-up', sumFlat(s1Flat,n), arrFlat[n-1], findCrossoverMonth(arrFlat, loanSim.cumInterestArr), false));
-
-  // 2. % Step-up 10% - interest target (exact)
-  const s1Step = loanSim.totalInterest/k10;
-  const arrStep = unit10.map(x=>x*s1Step);
-  rows.push(buildRow('% स्टेप-अप SIP (आपली पद्धत)', s1Step, '10% वार्षिक', sumStepPct(s1Step,n,10), arrStep[n-1], findCrossoverMonth(arrStep, loanSim.cumInterestArr), true));
-
-  // 3. Fast recovery - same start as flat, but 10% stepup (overshoot)
-  const arrFast = unit10.map(x=>x*s1Flat);
-  rows.push(buildRow('जलद रिकव्हरी (Fast Recovery)', s1Flat, '10% वार्षिक', sumStepPct(s1Flat,n,10), arrFast[n-1], findCrossoverMonth(arrFast, loanSim.cumInterestArr), false));
-
-  // 4. Fixed-amount step-up (₹1000/yr) - interest target
-  const F = 1000;
-  let s1Fx = (loanSim.totalInterest - F*unitAddon[n-1]) / k0;
-  if(s1Fx < 0) s1Fx = 0;
-  const arrFx = new Array(n);
-  for(let m=0;m<n;m++){ arrFx[m] = unit0[m]*s1Fx + unitAddon[m]*F; }
-  rows.push(buildRow('फिक्स्ड ₹ स्टेप-अप (+₹1,000/वर्ष)', s1Fx, '+₹1,000/वर्ष', sumFixedAddon(s1Fx,F,n), arrFx[n-1], findCrossoverMonth(arrFx, loanSim.cumInterestArr), false));
-
-  // 5. Zero cost house - full target, 10% stepup
-  const s1Full = loanSim.totalPayment/k10;
-  const arrFull = unit10.map(x=>x*s1Full);
-  rows.push(buildRow('संपूर्ण घर मोफत (Zero-Cost)', s1Full, '10% वार्षिक', sumStepPct(s1Full,n,10), arrFull[n-1], findCrossoverMonth(arrFull, loanSim.balanceArr), false));
+  const rows = rowDefs.map(def=>{
+    const r = computeStrategy(loanSim, def.targetMode, def.method, def.param);
+    const isCurrent = (def.targetMode === state.mode && def.method === state.stepMode);
+    const name = def.label + ' (' + modeLabel(def.targetMode) + ')' + (isCurrent ? ' — आपली सध्याची निवड' : '');
+    return buildRow(name, r.S1, methodLabel(def.method, def.param), r.invested, r.finalVal, r.recMonth, r.freeMonth, isCurrent);
+  });
 
   document.getElementById('pitchTbody').innerHTML = rows.join('');
 }
-function sumFlat(s1,n){ return s1*n; }
 function sumStepPct(s1,n,stepPct){
   let total=0, cur=s1;
   for(let m=1;m<=n;m++){
@@ -1123,15 +1177,17 @@ function sumFixedAddon(s1,F,n){
   }
   return total;
 }
-function buildRow(name, s1, stepLabel, invested, finalVal, crossMonth, hl){
-  const yr = crossMonth ? Math.ceil(crossMonth/12)+'व्या वर्षी' : 'साध्य नाही';
+function buildRow(name, s1, stepLabel, invested, finalVal, recMonth, freeMonth, hl){
+  const recYr = recMonth ? Math.ceil(recMonth/12)+'व्या वर्षी' : 'साध्य नाही';
+  const freeYr = freeMonth ? Math.ceil(freeMonth/12)+'व्या वर्षी' : 'साध्य नाही';
   return `<tr${hl?' class="highlight"':''}>
     <td class="strategy">${name}</td>
     <td>${fmtINR(s1)}</td>
     <td>${stepLabel}</td>
     <td>${fmtLakhCr(invested)}</td>
     <td>${fmtLakhCr(finalVal)}</td>
-    <td>${yr}</td>
+    <td>${recYr}</td>
+    <td>${freeYr}</td>
   </tr>`;
 }
 
