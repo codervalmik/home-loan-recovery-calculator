@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root{
     --g900:#0B2E22;
@@ -568,8 +569,12 @@
     </div>
 
     <div class="footer-btn-row">
-      <button class="btn btn-pdf" onclick="downloadPDF()">⬇️ Download PDF Report</button>
+      <button class="btn btn-pdf" onclick="downloadPDF()" id="pdfBtn">⬇️ Download PDF Report</button>
       <button class="btn btn-whatsapp" onclick="shareWhatsApp()">📲 Share on WhatsApp</button>
+    </div>
+
+    <div style="text-align:center;margin-top:12px;">
+      <a id="explainerLink" href="client-explainer-guide.html" target="_blank" style="display:inline-block;background:var(--paper-2);color:var(--g700);text-decoration:none;font-weight:700;font-size:12.5px;padding:10px 18px;border-radius:9px;border:1px solid var(--line);">📘 संकल्पना समजून घेण्यासाठी — क्लायंट एज्युकेशन गाईड उघडा</a>
     </div>
 
     <div class="nextstep-box">
@@ -1219,112 +1224,84 @@ Loan Freedom Year: ${freeYr}
   window.open(url, '_blank');
 }
 
-/* ============================= PDF (Devanagari via canvas) ============================= */
+/* ============================= PDF (full-page screenshot, multi-page) ============================= */
+function getAbsolutePosition(el){
+  let top = 0, left = 0;
+  while(el){
+    top += el.offsetTop || 0;
+    left += el.offsetLeft || 0;
+    el = el.offsetParent;
+  }
+  return {top, left};
+}
+
 async function downloadPDF(){
   if(!LAST) return;
+  const pdfBtn = document.getElementById('pdfBtn');
+  const originalBtnText = pdfBtn.textContent;
+  pdfBtn.textContent = '⏳ रिपोर्ट तयार होत आहे…';
+  pdfBtn.disabled = true;
+
+  const btnRow = document.querySelector('.footer-btn-row');
+  const originalDisplay = btnRow.style.display;
+  btnRow.style.display = 'none'; // hide action buttons themselves from the report
+
   try{
-    await document.fonts.load("800 34px 'Noto Sans Devanagari'");
-    await document.fonts.load("700 24px 'Noto Sans Devanagari'");
-    await document.fonts.load("600 20px 'Noto Sans Devanagari'");
-    await document.fonts.load("500 17px 'Noto Sans Devanagari'");
     await document.fonts.ready;
-  }catch(e){}
 
-  const {loanSim, activeS1, recMonth, freeMonth, recoveryPct} = LAST;
-  const scale = 2;
-  const W = 900, H = 1273;
-  const canvas = document.createElement('canvas');
-  canvas.width = W*scale; canvas.height = H*scale;
-  const ctx = canvas.getContext('2d');
-  ctx.scale(scale,scale);
+    const scale = 2;
+    const canvas = await html2canvas(document.body, {
+      scale: scale,
+      useCORS: true,
+      backgroundColor: '#F8FAF6',
+      windowWidth: document.documentElement.scrollWidth,
+      windowHeight: document.body.scrollHeight
+    });
 
-  ctx.fillStyle = '#F8FAF6'; ctx.fillRect(0,0,W,H);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({unit:'pt', format:'a4'});
+    const pageWidthPt = pdf.internal.pageSize.getWidth();
+    const pageHeightPt = pdf.internal.pageSize.getHeight();
 
-  ctx.fillStyle = '#0B2E22'; ctx.fillRect(0,0,W,150);
-  ctx.fillStyle = '#D4A72C';
-  ctx.font = "800 30px 'Noto Sans Devanagari'";
-  ctx.fillText('ETHICA Finserv', 40, 60);
-  ctx.fillStyle = '#F8FAF6';
-  ctx.font = "600 20px 'Noto Sans Devanagari'";
-  ctx.fillText('होम लोन रिकव्हरी रिपोर्ट', 40, 95);
-  ctx.font = "500 15px 'Noto Sans Devanagari'";
-  ctx.fillStyle = '#CFE3D6';
-  ctx.fillText('वल्मिक उगले  |  ARN-142382  |  EUIN-E243525  |  नाशिक', 40, 122);
+    const k = pageWidthPt / canvas.width; // pt per canvas-px
+    const sliceHeightPx = Math.floor(pageHeightPt / k);
+    const totalPages = Math.ceil(canvas.height / sliceHeightPx);
 
-  let y = 175;
-  if(state.clientName || state.clientDate){
-    ctx.fillStyle = '#8A6D0E';
-    ctx.font = "600 15px 'Noto Sans Devanagari'";
-    const clientLine = (state.clientName ? ('क्लायंट: ' + state.clientName) : '') +
-                        (state.clientDate ? ('   |   दिनांक: ' + state.clientDate) : '');
-    ctx.fillText(clientLine, 40, y);
-    y += 30;
-  } else {
-    y = 200;
+    for(let p=0; p<totalPages; p++){
+      const sy = p*sliceHeightPx;
+      const sh = Math.min(sliceHeightPx, canvas.height - sy);
+      const pageCanvas = document.createElement('canvas');
+      pageCanvas.width = canvas.width;
+      pageCanvas.height = sh;
+      const ctx = pageCanvas.getContext('2d');
+      ctx.drawImage(canvas, 0, sy, canvas.width, sh, 0, 0, canvas.width, sh);
+      const imgData = pageCanvas.toDataURL('image/jpeg', 0.92);
+      if(p > 0) pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, 0, pageWidthPt, sh*k);
+    }
+
+    // make the "explainer guide" link a real clickable link inside the PDF too
+    const linkEl = document.getElementById('explainerLink');
+    if(linkEl){
+      const pos = getAbsolutePosition(linkEl);
+      const elCanvasX = pos.left*scale, elCanvasY = pos.top*scale;
+      const elCanvasW = linkEl.offsetWidth*scale, elCanvasH = linkEl.offsetHeight*scale;
+      const pageIdx = Math.min(Math.floor(elCanvasY/sliceHeightPx), totalPages-1);
+      const withinY = elCanvasY - pageIdx*sliceHeightPx;
+      pdf.setPage(pageIdx+1);
+      pdf.link(elCanvasX*k, withinY*k, elCanvasW*k, elCanvasH*k, {url:'client-explainer-guide.html'});
+    }
+
+    const fileClient = state.clientName ? ('-' + state.clientName.replace(/[^a-zA-Z0-9\u0900-\u097F]+/g,'_')) : '';
+    pdf.save('Home-Loan-Recovery-Report' + fileClient + '-ETHICA-Finserv.pdf');
+  } catch(err){
+    alert('PDF तयार करताना अडचण आली. कृपया पुन्हा प्रयत्न करा.');
+    console.error(err);
+  } finally {
+    btnRow.style.display = originalDisplay;
+    pdfBtn.textContent = originalBtnText;
+    pdfBtn.disabled = false;
   }
-  ctx.fillStyle = '#1C2733';
-  ctx.font = "700 22px 'Noto Sans Devanagari'";
-  ctx.fillText('कर्ज तपशील', 40, y); y+=36;
-  ctx.font = "500 18px 'Noto Sans Devanagari'";
-  const lines1 = [
-    'होम लोन रक्कम: ' + fmtLakhCr(state.loan),
-    'व्याजदर: ' + state.rate + '% | कालावधी: ' + state.tenure + ' वर्षे',
-    'मासिक EMI: ' + fmtINR(loanSim.emi),
-    'एकूण व्याज: ' + fmtLakhCr(loanSim.totalInterest),
-    'एकूण परतफेड: ' + fmtLakhCr(loanSim.totalPayment)
-  ];
-  lines1.forEach(l=>{ ctx.fillText(l, 40, y); y+=32; });
-
-  y += 20;
-  ctx.fillStyle = '#0B2E22';
-  ctx.fillRect(30, y-28, W-60, 195);
-  ctx.fillStyle = '#D4A72C';
-  ctx.font = "700 22px 'Noto Sans Devanagari'";
-  ctx.fillText('SIP रिकव्हरी प्लॅन', 50, y); y+=38;
-  ctx.fillStyle = '#F8FAF6';
-  ctx.font = "500 18px 'Noto Sans Devanagari'";
-  const recYr = recMonth ? Math.ceil(recMonth/12)+' व्या वर्षी' : 'कालावधीत साध्य नाही';
-  const freeYr = freeMonth ? Math.ceil(freeMonth/12)+' व्या वर्षी' : 'कालावधीत साध्य नाही';
-  const stepLabel = state.stepMode==='pct' ? ('  (वार्षिक '+state.stepPctVal+'% स्टेप-अप सह)')
-                   : state.stepMode==='fixed' ? ('  (+₹'+state.stepFixedVal.toLocaleString('en-IN')+'/वर्ष स्टेप-अप सह)')
-                   : '  (फिक्स्ड)';
-  const lines2 = [
-    'मासिक SIP: ' + fmtINR(activeS1) + stepLabel,
-    'व्याज रिकव्हरी वर्ष: ' + recYr,
-    '🏆 Loan Freedom Year: ' + freeYr,
-    'रिकव्हरी टक्केवारी: ' + recoveryPct.toFixed(1) + '%'
-  ];
-  lines2.forEach(l=>{ ctx.fillText(l, 50, y); y+=32; });
-
-  y += 60;
-  ctx.fillStyle = '#1C2733';
-  ctx.font = "700 20px 'Noto Sans Devanagari'";
-  ctx.fillText('पुढील पाऊल', 40, y); y+=30;
-  ctx.font = "500 16px 'Noto Sans Devanagari'";
-  ctx.fillText('सविस्तर वैयक्तिक नियोजनासाठी वल्मिक उगले यांच्याशी थेट संपर्क साधा.', 40, y); y+=26;
-  ctx.fillText('डोअरस्टेप सेवा | शून्य सेवा शुल्क | नाशिक व परिसर', 40, y);
-
-  y = H - 110;
-  ctx.fillStyle = '#5B6675';
-  ctx.font = "400 12px 'Noto Sans Devanagari'";
-  const disc = [
-    'म्युच्युअल फंडातील गुंतवणूक ही बाजार जोखमीच्या अधीन आहे. योजनेसंबंधीत सर्व कागदपत्रे',
-    'काळजीपूर्वक वाचावीत. वरील आकडेवारी शैक्षणिक अंदाज असून भविष्यातील परताव्याची हमी नाही.',
-    'हा रिपोर्ट गुंतवणूक सल्ला नाही.'
-  ];
-  disc.forEach(l=>{ ctx.fillText(l, 40, y); y+=18; });
-  ctx.font = "700 13px 'Noto Sans Devanagari'";
-  ctx.fillStyle = '#0B2E22';
-  ctx.fillText('वल्मिक दगु उगले | ARN-142382 | EUIN-E243525 | AMFI + SIF रजिस्टर्ड डिस्ट्रिब्युटर', 40, y+16);
-
-  const imgData = canvas.toDataURL('image/png');
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF({unit:'pt', format:'a4'});
-  const pageW = pdf.internal.pageSize.getWidth();
-  const pageH = pdf.internal.pageSize.getHeight();
-  pdf.addImage(imgData, 'PNG', 0, 0, pageW, pageH);
-  const fileClient = state.clientName ? ('-' + state.clientName.replace(/[^a-zA-Z0-9\u0900-\u097F]+/g,'_')) : '';
-  pdf.save('Home-Loan-Recovery-Report' + fileClient + '-ETHICA-Finserv.pdf');
 }
 
 /* ============================= INIT ============================= */
