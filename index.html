@@ -242,6 +242,17 @@
   .sip-slider-wrap .manual-box span{background:rgba(255,255,255,0.1);color:#CFE3D6;}
   .sip-slider-wrap .manual-box input{background:transparent;color:#fff;}
 
+  .magic-info-toggle{
+    position:relative;z-index:2;text-align:center;margin-top:12px;
+    font-size:11.5px;font-weight:700;color:var(--gold-2);text-decoration:underline;
+    cursor:pointer;user-select:none;
+  }
+  .magic-info-text{
+    position:relative;z-index:2;display:none;margin-top:8px;
+    background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.16);
+    border-radius:9px;padding:11px 13px;font-size:11.5px;color:#E5EFE8;line-height:1.7;
+  }
+
   /* ===== Chart ===== */
   .chart-legend{display:flex;gap:18px;justify-content:center;margin-bottom:10px;flex-wrap:wrap;}
   .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-weight:600;}
@@ -467,6 +478,9 @@
         <div class="magic-item"><div class="l">🏆 Loan Freedom Year</div><div class="v gold num" id="freedomYearOut">—</div></div>
         <div class="magic-item"><div class="l">कालावधी अखेर अतिरिक्त नफा</div><div class="v green num" id="surplusOut">—</div></div>
       </div>
+
+      <div class="magic-info-toggle" onclick="toggleFreedomInfo()" id="freedomInfoToggle">❓ Freedom, व्याज-रिकव्हरीच्या आधी/नंतर का येतं?</div>
+      <div class="magic-info-text" id="freedomInfoText"></div>
 
       <div class="sip-slider-wrap">
         <div class="field-top">
@@ -936,6 +950,33 @@ function renderResultsOnly(){
 
   renderChartOnly();
   renderDelayBox();
+  renderFreedomInfo();
+}
+
+/* ============================= FREEDOM vs RECOVERY EXPLANATION ============================= */
+let freedomInfoOpen = false;
+function toggleFreedomInfo(){
+  freedomInfoOpen = !freedomInfoOpen;
+  document.getElementById('freedomInfoText').style.display = freedomInfoOpen ? 'block' : 'none';
+  document.getElementById('freedomInfoToggle').textContent = freedomInfoOpen
+    ? '❌ माहिती लपवा'
+    : '❓ Freedom, व्याज-रिकव्हरीच्या आधी/नंतर का येतं?';
+}
+function renderFreedomInfo(){
+  if(!LAST) return;
+  const {recMonth, freeMonth} = LAST;
+  const box = document.getElementById('freedomInfoText');
+  let msg;
+  if(recMonth === null || freeMonth === null){
+    msg = 'सध्याच्या SIP रकमेने कालावधीत दोन्ही उद्दिष्टं (व्याज रिकव्हरी आणि Loan Freedom) साध्य होत नाहीत. SIP रक्कम वाढवून बघा किंवा स्टेप-अप चालू करा.';
+  } else if(freeMonth < recMonth){
+    msg = '👉 इथे <b>Loan Freedom आधी</b> येतंय, कारण कर्जाच्या सुरुवातीच्या वर्षांत हप्त्यातला मोठा भाग व्याजाचाच असतो. काही वर्षांनी "आतापर्यंत भरलेलं एकूण व्याज" हे "उरलेल्या मूळ रकमे"पेक्षा जास्त होऊन जातं — त्यामुळे लहान झालेली उरलेली रक्कम (Freedom) आधी गाठली जाते, आणि मोठा साठलेला व्याजाचा आकडा (Recovery) नंतर.';
+  } else if(freeMonth > recMonth){
+    msg = '👉 इथे <b>व्याज रिकव्हरी आधी</b> येतंय — कारण अजून कर्जाची बरीच मूळ रक्कम शिल्लक आहे (ती व्याजाच्या तुलनेत मोठी आहे), त्यामुळे SIP कॉर्पसला ती गाठायला जास्त वेळ लागतो.';
+  } else {
+    msg = 'या क्षणी व्याज रिकव्हरी आणि Loan Freedom जवळपास एकाच वेळी साध्य होतायत.';
+  }
+  box.innerHTML = msg;
 }
 
 /* ============================= DELAY-COST BOX ============================= */
