@@ -382,6 +382,7 @@
           <input type="number" id="loanAmountManual" value="5000000" step="10000" oninput="syncFromManual('loanAmount','loanAmountManual')" onblur="clampLoanAmount()">
         </div>
       </div>
+      <div style="text-align:right;font-size:11.5px;font-weight:700;color:var(--g700);margin-bottom:8px;" id="loanAmountHint">= ₹50.00 लाख</div>
       <input type="range" id="loanAmount" min="100000" max="100000000" step="50000" value="5000000" oninput="syncFromSlider('loanAmount','loanAmountManual')">
       <div class="range-minmax"><span>₹1 लाख</span><span>₹10 कोटी</span></div>
     </div>
@@ -882,6 +883,7 @@ function compute(){
   const active = document.activeElement;
   const laM = document.getElementById('loanAmountManual');
   if(active !== laM) laM.value = Math.round(state.loan);
+  document.getElementById('loanAmountHint').textContent = '= ' + fmtLakhCr(state.loan);
   const rM = document.getElementById('rateManual');
   if(active !== rM) rM.value = state.rate;
   const tM = document.getElementById('tenureManual');
