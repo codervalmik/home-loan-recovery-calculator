@@ -561,11 +561,12 @@
       <div class="scroll-x">
         <table>
           <thead>
-            <tr><th style="text-align:left;">रणनीती</th><th>वाढीचा प्रकार</th><th>एकूण गुंतवणूक (लक्ष्यापर्यंत)</th><th>कालावधी अखेर मूल्य</th><th>लक्ष्य वर्ष</th><th>किती आधी</th></tr>
+            <tr><th style="text-align:left;">रणनीती</th><th>वाढीचा प्रकार</th><th>एकूण गुंतवणूक (लक्ष्यापर्यंत)</th><th>लक्ष्य वर्ष</th><th>किती आधी</th><th>SIP तशीच चालू ठेवल्यास २०व्या वर्षी (ऐच्छिक)</th></tr>
           </thead>
           <tbody id="pitchBTbody"></tbody>
         </table>
       </div>
+      <div class="note">💡 "किती आधी" हे मुख्य आकडे आहेत — SIP कॉर्पस लक्ष्यापर्यंत किती लवकर पोहोचतो ते दाखवतात. गृहकर्जाचा EMI मात्र बँकेच्या करारानुसार पूर्ण मूळ कालावधीसाठीच (इथे कार्ड १ नुसार) चालू राहतो — लक्ष्य लवकर गाठल्याने कर्ज आपोआप लवकर संपत नाही. लक्ष्य गाठल्यावर SIP थांबवायची, कमी करायची की तशीच चालू ठेवायची (शेवटचा column — फक्त माहितीसाठी) हे क्लायंटच्या निर्णयावर आहे.</div>
     </div>
 
     <div class="note">टीप: SIP मधील परतावा दीर्घकालीन भांडवली नफा कर (LTCG) साठी पात्र आहे व गृहकर्ज व्याज सवलत (कलम 24-ब) आयकर प्रणालीनुसार बदलू शकते. वरील आकडे मार्केट-लिंक्ड अंदाज असून हमी परतावा दर्शवत नाहीत — योग्य कर सल्लागाराचा सल्ला घ्या.</div>
@@ -1327,9 +1328,9 @@ function renderPitchTableB(){
       <td class="strategy">${name}</td>
       <td>${pitchMethodLabel(method, param)}</td>
       <td>${fmtLakhCr(r.invested)}</td>
-      <td>${fmtLakhCr(r.finalVal)}</td>
       <td>${targetYrTxt}</td>
       <td>${savedTxt}</td>
+      <td>${fmtLakhCr(r.finalVal)}</td>
     </tr>`;
   });
   document.getElementById('pitchBTbody').innerHTML = rows.join('');
