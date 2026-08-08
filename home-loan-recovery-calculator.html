@@ -289,6 +289,18 @@
     border-radius:8px;padding:10px 12px;margin-top:10px;display:none;
   }
 
+  /* ===== Pitch table: two-part strategy comparison ===== */
+  .pitch-section-header{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px;}
+  .pitch-badge{
+    flex-shrink:0;font-weight:800;font-size:11px;padding:4px 11px;border-radius:99px;
+    color:#fff;white-space:nowrap;margin-top:2px;
+  }
+  .pitch-badge-a{background:var(--g700);}
+  .pitch-badge-b{background:var(--gold);}
+  .pitch-section-title{font-size:14.5px;font-weight:800;color:var(--g800);}
+  .pitch-section-sub{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.55;}
+  .pitch-divider{height:1px;background:var(--line);margin:20px 0;}
+
   /* ===== Delay-cost urgency box ===== */
   .delay-box{
     background:#FFFBEB;border:1px solid #FDE68A;border-left:5px solid #D97706;
@@ -379,11 +391,12 @@
         <span class="field-label">होम लोन रक्कम</span>
         <div class="manual-box">
           <span>₹</span>
-          <input type="number" id="loanAmountManual" value="5000000" step="10000" oninput="syncFromManual('loanAmount','loanAmountManual')" onblur="clampLoanAmount()">
+          <input type="number" id="loanAmountManual" value="50.00" step="0.5" oninput="onLoanAmountLakhInput()" onblur="clampLoanAmountLakh()">
+          <span>लाख</span>
         </div>
       </div>
-      <div style="text-align:right;font-size:11.5px;font-weight:700;color:var(--g700);margin-bottom:8px;" id="loanAmountHint">= ₹50.00 लाख</div>
-      <input type="range" id="loanAmount" min="100000" max="100000000" step="50000" value="5000000" oninput="syncFromSlider('loanAmount','loanAmountManual')">
+      <div style="text-align:right;font-size:11.5px;font-weight:700;color:var(--g700);margin-bottom:8px;display:none;" id="loanAmountHint">= ₹1.00 कोटी</div>
+      <input type="range" id="loanAmount" min="100000" max="100000000" step="50000" value="5000000" oninput="onLoanAmountSliderInput()">
       <div class="range-minmax"><span>₹1 लाख</span><span>₹10 कोटी</span></div>
     </div>
 
@@ -513,14 +526,48 @@
   <!-- PITCH TABLE -->
   <div class="card">
     <h2>४. स्ट्रॅटेजी तुलना तक्ता <span class="tag">Client Pitch</span></h2>
-    <div class="scroll-x">
-      <table id="pitchTable">
-        <thead>
-          <tr><th style="text-align:left;">रणनीती</th><th>सुरुवातीची SIP</th><th>वाढीचा प्रकार</th><th>एकूण गुंतवणूक</th><th>कालावधी अखेर मूल्य</th><th>व्याज रिकव्हरी</th><th>Loan Freedom</th></tr>
-        </thead>
-        <tbody id="pitchTbody"></tbody>
-      </table>
+
+    <!-- PART A -->
+    <div class="pitch-section">
+      <div class="pitch-section-header">
+        <span class="pitch-badge pitch-badge-a">भाग अ</span>
+        <div>
+          <div class="pitch-section-title">ठराविक कालावधीत, किती SIP लागेल?</div>
+          <div class="pitch-section-sub">कालावधी <b><span id="pitchATenure">20</span> वर्षं</b> कायम ठेवून (कार्ड १ नुसार) — प्रत्येक पद्धतीसाठी नेमकी किती सुरुवातीची SIP लागेल ते बघा.</div>
+        </div>
+      </div>
+      <div class="scroll-x">
+        <table>
+          <thead>
+            <tr><th style="text-align:left;">रणनीती</th><th>वाढीचा प्रकार</th><th>आवश्यक सुरुवातीची SIP</th><th>एकूण गुंतवणूक</th><th>कालावधी अखेर मूल्य</th></tr>
+          </thead>
+          <tbody id="pitchATbody"></tbody>
+        </table>
+      </div>
+      <div class="fixed-note" id="pitchAOvershootNote" style="display:none;"></div>
     </div>
+
+    <div class="pitch-divider"></div>
+
+    <!-- PART B -->
+    <div class="pitch-section">
+      <div class="pitch-section-header">
+        <span class="pitch-badge pitch-badge-b">भाग ब</span>
+        <div>
+          <div class="pitch-section-title">ठराविक SIP मध्ये, कालावधी किती कमी होतो?</div>
+          <div class="pitch-section-sub">मासिक SIP <b>₹<span id="pitchBSip">—</span></b> कायम ठेवून (वरच्या "तुमची मासिक SIP" स्लायडरनुसार) — प्रत्येक पद्धतीने लक्ष्य किती लवकर गाठलं जातं ते बघा.</div>
+        </div>
+      </div>
+      <div class="scroll-x">
+        <table>
+          <thead>
+            <tr><th style="text-align:left;">रणनीती</th><th>वाढीचा प्रकार</th><th>एकूण गुंतवणूक (लक्ष्यापर्यंत)</th><th>कालावधी अखेर मूल्य</th><th>लक्ष्य वर्ष</th><th>किती आधी</th></tr>
+          </thead>
+          <tbody id="pitchBTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="note">टीप: SIP मधील परतावा दीर्घकालीन भांडवली नफा कर (LTCG) साठी पात्र आहे व गृहकर्ज व्याज सवलत (कलम 24-ब) आयकर प्रणालीनुसार बदलू शकते. वरील आकडे मार्केट-लिंक्ड अंदाज असून हमी परतावा दर्शवत नाहीत — योग्य कर सल्लागाराचा सल्ला घ्या.</div>
   </div>
 
@@ -667,13 +714,29 @@ function syncFromManual(sliderId, manualId, kind){
   slider.value = v; // browser auto-clamps to slider's min/max
   compute();
 }
-function clampLoanAmount(){
+function rupeesToLakhStr(rupees){ return (rupees/100000).toFixed(2); }
+
+function onLoanAmountSliderInput(){
+  const v = parseFloat(document.getElementById('loanAmount').value);
+  const manualEl = document.getElementById('loanAmountManual');
+  if(document.activeElement !== manualEl) manualEl.value = rupeesToLakhStr(v);
+  compute();
+}
+function onLoanAmountLakhInput(){
+  let lakh = parseFloat(document.getElementById('loanAmountManual').value);
+  if(isNaN(lakh)) return;
+  const rupees = lakh*100000;
+  document.getElementById('loanAmount').value = rupees; // browser auto-clamps to ₹1L–₹10Cr
+  compute();
+}
+function clampLoanAmountLakh(){
   const el = document.getElementById('loanAmountManual');
-  let v = parseFloat(el.value);
-  if(isNaN(v)) v = 500000;
-  v = Math.min(100000000, Math.max(100000, v));
-  el.value = Math.round(v);
-  document.getElementById('loanAmount').value = v;
+  let lakh = parseFloat(el.value);
+  if(isNaN(lakh)) lakh = 50;
+  let rupees = lakh*100000;
+  rupees = Math.min(100000000, Math.max(100000, rupees));
+  el.value = rupeesToLakhStr(rupees);
+  document.getElementById('loanAmount').value = rupees;
   compute();
 }
 function clampPrepay(){
@@ -882,8 +945,14 @@ function compute(){
 
   const active = document.activeElement;
   const laM = document.getElementById('loanAmountManual');
-  if(active !== laM) laM.value = Math.round(state.loan);
-  document.getElementById('loanAmountHint').textContent = '= ' + fmtLakhCr(state.loan);
+  if(active !== laM) laM.value = rupeesToLakhStr(state.loan);
+  const hintEl = document.getElementById('loanAmountHint');
+  if(state.loan >= 10000000){
+    hintEl.style.display = 'block';
+    hintEl.textContent = '= ' + fmtLakhCr(state.loan);
+  } else {
+    hintEl.style.display = 'none';
+  }
   const rM = document.getElementById('rateManual');
   if(active !== rM) rM.value = state.rate;
   const tM = document.getElementById('tenureManual');
@@ -961,6 +1030,7 @@ function renderResultsOnly(){
   renderChartOnly();
   renderDelayBox();
   renderFreedomInfo();
+  renderPitchTable();
 }
 
 /* ============================= FREEDOM vs RECOVERY EXPLANATION ============================= */
@@ -1106,13 +1176,42 @@ function renderChartOnly(){
   document.getElementById('chartHolder').innerHTML = svg;
 }
 
-/* ============================= PITCH TABLE ============================= */
-/* Pure helper: compute one strategy's numbers for a given target-mode + step-method + param */
-function computeStrategy(loanSim, targetMode, method, param){
+/* ============================= PITCH TABLE (Part A + Part B) ============================= */
+
+/* base SIP for Part B = smallest possible starting amount (flat, running the full tenure).
+   If the person has manually overridden the "तुमची मासिक SIP" slider, that becomes
+   the live base for the CURRENTLY selected mode, so Part B stays in sync with it. */
+function flatBaseFor(loanSim, targetMode){
+  const unit = simulateUnitPct(state.sipReturn, loanSim.n, 0);
+  const target = targetMode === 'interest' ? loanSim.totalInterest : loanSim.totalPayment;
+  return target / unit[loanSim.n-1];
+}
+function baseFor(loanSim, targetMode){
+  if(targetMode === state.mode && state.sipOverride !== null) return state.sipOverride;
+  return flatBaseFor(loanSim, targetMode);
+}
+
+function findMonthReachingTarget(arr, targetValue){
+  for(let m=0;m<arr.length;m++){ if(arr[m] >= targetValue) return m+1; }
+  return null;
+}
+function monthlyContribAt(method, baseS1, param, m){
+  const yearsElapsed = Math.floor((m-1)/12);
+  if(method === 'flat') return baseS1;
+  if(method === 'pct') return baseS1 * Math.pow(1+param/100, yearsElapsed);
+  return baseS1 + yearsElapsed*param; // fixed
+}
+function sumContrib(method, baseS1, param, uptoMonths){
+  let total = 0;
+  for(let m=1;m<=uptoMonths;m++){ total += monthlyContribAt(method, baseS1, param, m); }
+  return total;
+}
+
+/* PART A: tenure is FIXED (from card १) — solve for the required starting SIP per method */
+function solveVariantForTenure(loanSim, targetMode, method, param){
   const n = loanSim.n;
   const target = targetMode === 'interest' ? loanSim.totalInterest : loanSim.totalPayment;
-  let S1, buildArr, invested;
-
+  let S1, buildArr, invested, overshoot = false;
   if(method === 'flat'){
     const unit = simulateUnitPct(state.sipReturn, n, 0);
     const k = unit[n-1];
@@ -1130,44 +1229,117 @@ function computeStrategy(loanSim, targetMode, method, param){
     const unitAddon = simulateUnitAddon(state.sipReturn, n);
     const k0 = unit0[n-1], kAdd = unitAddon[n-1];
     S1 = (target - param*kAdd) / k0;
-    if(S1 < 0) S1 = 0;
+    if(S1 < 0){ S1 = 0; overshoot = true; }
     buildArr = new Array(n);
     for(let m=0;m<n;m++){ buildArr[m] = unit0[m]*S1 + unitAddon[m]*param; }
     invested = sumFixedAddon(S1, param, n);
   }
-
   const finalVal = buildArr[n-1];
-  const recMonth = findCrossoverMonth(buildArr, loanSim.cumInterestArr);
-  const freeMonth = findCrossoverMonth(buildArr, loanSim.balanceArr);
-  return {S1, invested, finalVal, recMonth, freeMonth};
+  return {S1, invested, finalVal, overshoot};
+}
+
+/* PART B: starting SIP is FIXED (the live base) — observe when each method reaches the target */
+function computeVariant(loanSim, targetMode, method, param, baseS1){
+  const n = loanSim.n;
+  const target = targetMode === 'interest' ? loanSim.totalInterest : loanSim.totalPayment;
+  let unitArr;
+  if(method === 'flat'){
+    const unit = simulateUnitPct(state.sipReturn, n, 0);
+    unitArr = unit.map(x=>x*baseS1);
+  } else if(method === 'pct'){
+    const unit = simulateUnitPct(state.sipReturn, n, param);
+    unitArr = unit.map(x=>x*baseS1);
+  } else {
+    const unit0 = simulateUnitPct(state.sipReturn, n, 0);
+    const unitAddon = simulateUnitAddon(state.sipReturn, n);
+    unitArr = new Array(n);
+    for(let m=0;m<n;m++){ unitArr[m] = unit0[m]*baseS1 + unitAddon[m]*param; }
+  }
+  const recMonth = findMonthReachingTarget(unitArr, target);
+  const invested = sumContrib(method, baseS1, param, recMonth || n);
+  const finalVal = unitArr[n-1];
+  return {S1: baseS1, invested, finalVal, recMonth};
+}
+
+const PITCH_METHODS = [
+  {method:'flat', label:'फ्लॅट SIP'},
+  {method:'pct', label:'% स्टेप-अप SIP'},
+  {method:'fixed', label:'फिक्स्ड ₹ स्टेप-अप'},
+];
+function pitchMethodParam(method){
+  return method === 'pct' ? state.stepPctVal : method === 'fixed' ? state.stepFixedVal : 0;
+}
+function pitchMethodLabel(method, param){
+  return method === 'flat' ? 'No Step-up'
+    : method === 'pct' ? (param + '% वार्षिक')
+    : ('+₹' + Math.round(param).toLocaleString('en-IN') + '/वर्ष');
+}
+
+function renderPitchTableA(){
+  const {loanSim} = LAST;
+  document.getElementById('pitchATenure').textContent = state.tenure;
+
+  let overshootFlag = false;
+  const rows = PITCH_METHODS.map(({method,label})=>{
+    const param = pitchMethodParam(method);
+    const r = solveVariantForTenure(loanSim, state.mode, method, param);
+    if(r.overshoot) overshootFlag = true;
+    const isCurrent = method === state.stepMode;
+    const name = label + (isCurrent ? ' (आपली सध्याची निवड)' : '');
+    return `<tr${isCurrent?' class="highlight"':''}>
+      <td class="strategy">${name}</td>
+      <td>${pitchMethodLabel(method, param)}</td>
+      <td>${fmtINR(r.S1)}</td>
+      <td>${fmtLakhCr(r.invested)}</td>
+      <td>${fmtLakhCr(r.finalVal)}</td>
+    </tr>`;
+  });
+  document.getElementById('pitchATbody').innerHTML = rows.join('');
+
+  const note = document.getElementById('pitchAOvershootNote');
+  if(overshootFlag){
+    note.style.display = 'block';
+    note.innerHTML = '⚠️ <b>फिक्स्ड ₹ स्टेप-अप</b> मध्ये, तुम्ही ठरवलेली वार्षिक वाढ (+₹' + Math.round(state.stepFixedVal).toLocaleString('en-IN') + '/वर्ष) एकटीच लक्ष्य गाठण्यासाठी पुरेशी आहे — त्यामुळे सुरुवातीचा SIP ₹0 दाखवला आहे. कार्ड २ मध्ये वार्षिक वाढीची रक्कम कमी केल्यास अधिक "नेमकं पुरेसं" असा आकडा मिळेल.';
+  } else {
+    note.style.display = 'none';
+  }
+}
+
+function renderPitchTableB(){
+  const {loanSim} = LAST;
+  const base = baseFor(loanSim, state.mode);
+  document.getElementById('pitchBSip').textContent = Math.round(base).toLocaleString('en-IN');
+
+  const rows = PITCH_METHODS.map(({method,label})=>{
+    const param = pitchMethodParam(method);
+    const r = computeVariant(loanSim, state.mode, method, param, base);
+    const isCurrent = method === state.stepMode;
+    const name = label + (isCurrent ? ' (आपली सध्याची निवड)' : '');
+    const recYr = r.recMonth ? Math.ceil(r.recMonth/12) : null;
+    const targetYrTxt = recYr !== null ? (recYr + 'व्या वर्षी') : 'साध्य नाही';
+    let savedTxt;
+    if(recYr === null){ savedTxt = '—'; }
+    else {
+      const saved = state.tenure - recYr;
+      savedTxt = saved > 0 ? ('🎉 ' + saved + ' वर्षं आधी') : (saved === 0 ? '—' : 'कालावधीबाहेर');
+    }
+    return `<tr${isCurrent?' class="highlight"':''}>
+      <td class="strategy">${name}</td>
+      <td>${pitchMethodLabel(method, param)}</td>
+      <td>${fmtLakhCr(r.invested)}</td>
+      <td>${fmtLakhCr(r.finalVal)}</td>
+      <td>${targetYrTxt}</td>
+      <td>${savedTxt}</td>
+    </tr>`;
+  });
+  document.getElementById('pitchBTbody').innerHTML = rows.join('');
 }
 
 function renderPitchTable(){
-  const {loanSim} = LAST;
-  const otherMode = state.mode === 'interest' ? 'full' : 'interest';
-  const modeLabel = m => m === 'interest' ? 'व्याज वसूल' : 'संपूर्ण घर मोफत';
-  const methodLabel = (method, param) => method === 'flat' ? 'No Step-up'
-    : method === 'pct' ? (param + '% वार्षिक')
-    : ('+₹' + Math.round(param).toLocaleString('en-IN') + '/वर्ष');
-
-  // rows use the LIVE toggle values from card २ — nothing hardcoded
-  const rowDefs = [
-    {label:'फ्लॅट SIP', targetMode: state.mode, method:'flat', param:0},
-    {label:'% स्टेप-अप SIP', targetMode: state.mode, method:'pct', param: state.stepPctVal},
-    {label:'फिक्स्ड ₹ स्टेप-अप', targetMode: state.mode, method:'fixed', param: state.stepFixedVal},
-    {label:'फ्लॅट SIP', targetMode: otherMode, method:'flat', param:0},
-    {label:'% स्टेप-अप SIP', targetMode: otherMode, method:'pct', param: state.stepPctVal},
-  ];
-
-  const rows = rowDefs.map(def=>{
-    const r = computeStrategy(loanSim, def.targetMode, def.method, def.param);
-    const isCurrent = (def.targetMode === state.mode && def.method === state.stepMode);
-    const name = def.label + ' (' + modeLabel(def.targetMode) + ')' + (isCurrent ? ' — आपली सध्याची निवड' : '');
-    return buildRow(name, r.S1, methodLabel(def.method, def.param), r.invested, r.finalVal, r.recMonth, r.freeMonth, isCurrent);
-  });
-
-  document.getElementById('pitchTbody').innerHTML = rows.join('');
+  renderPitchTableA();
+  renderPitchTableB();
 }
+
 function sumStepPct(s1,n,stepPct){
   let total=0, cur=s1;
   for(let m=1;m<=n;m++){
@@ -1183,19 +1355,6 @@ function sumFixedAddon(s1,F,n){
     total += s1+addon;
   }
   return total;
-}
-function buildRow(name, s1, stepLabel, invested, finalVal, recMonth, freeMonth, hl){
-  const recYr = recMonth ? Math.ceil(recMonth/12)+'व्या वर्षी' : 'साध्य नाही';
-  const freeYr = freeMonth ? Math.ceil(freeMonth/12)+'व्या वर्षी' : 'साध्य नाही';
-  return `<tr${hl?' class="highlight"':''}>
-    <td class="strategy">${name}</td>
-    <td>${fmtINR(s1)}</td>
-    <td>${stepLabel}</td>
-    <td>${fmtLakhCr(invested)}</td>
-    <td>${fmtLakhCr(finalVal)}</td>
-    <td>${recYr}</td>
-    <td>${freeYr}</td>
-  </tr>`;
 }
 
 /* ============================= WHATSAPP CTA ============================= */
